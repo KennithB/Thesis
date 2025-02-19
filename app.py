@@ -9,8 +9,15 @@ from PIL import Image, ImageTk
 picam2 = Picamera2()
 picam2.start()
 
+# Reset zoom and focus to default
+picam2.set_controls({
+    "ScalerCrop": (0.0, 0.0, 1.0, 1.0),  # No zoom: use the full sensor
+    "LensPosition": 0.0                 # Default focus (if supported)
+})
+
 # Global variable to store the current image path
 current_image_path = None
+
 
 def capture_image():
     global current_image_path
@@ -19,14 +26,18 @@ def capture_image():
     filename = datetime.now().strftime("captured_%Y%m%d_%H%M%S.jpg")
     image_path = os.path.join(desktop_path, filename)
     
+    # Reset zoom and focus to default before capturing
+    picam2.set_controls({
+        "ScalerCrop": (0.0, 0.0, 1.0, 1.0),
+        "LensPosition": 0.0
+    })
+    
     # Capture image using the active camera
     picam2.capture_file(image_path)
     current_image_path = image_path
 
-    # Update status label
+    # Update status label and display preview...
     status_label.config(text=f"Image saved: {filename}")
-    
-    # Load image and create a thumbnail for preview
     img = Image.open(image_path)
     preview = img.copy()
     preview.thumbnail((250, 250))
